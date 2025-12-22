@@ -1,37 +1,77 @@
 from function import magicCube
 
-def main():
+def interactive_mode():
     print("=== RUBIK'S CUBE SIMULATOR 3x3 ===\n")
     
     cube = magicCube()
-    
-    print("\nScrambling the cube...")
-    cube.scramble(15)
+    print("Starting with solved cube...")
     cube.visualize()
-
-    print("\n=== Sumary of moves ===")
-    print("U  = Rotate upper face clockwise")
-    print("U' = Rotate upper face counterclockwise")
-    print("D  = Rotate down face clockwise")
-    print("R  = Rotate right face clockwise")
-    print("L  = Rotate left face clockwise")
-    print("F  = Rotate front face clockwise")
-    print("\nAdd ' after the letter for inverse move (e.g., R')")
     
-    print("\n=== layer by layer method ===")
-    print("1. White cross (U face)")
-    print("2. First layer white corners")
-    print("3. Second layer (middle edges)")
-    print("4. Yellow cross (D face)")
-    print("5. Orient yellow cross")
-    print("6. Position yellow corners")
-    print("7. Orient yellow corners")
+    print("\n=== AVAILABLE MOVES ===")
+    print("U, D, R, L, F, B  = Clockwise rotation")
+    print("U', D', R', L', F', B' = Counterclockwise")
+    print("\nSpecial commands:")
+    print("  show     - Visualize current state")
+    print("  scramble - Scramble the cube")
+    print("  reset    - Reset to solved state")
+    print("  history  - Show move history")
+    print("  quit     - Exit program")
+    print("\nYou can type multiple moves: R U R' U'")
+    print("-" * 10)
     
-    print("\nExample of some moves:")
-    print("cube.R()   -->    Rotate right")
-    print("cube.U(True)  -->   Rotate up counterclockwise")
-    print("cube.F()   -->     Rotate front")
-    print("cube.visualize()   -->    Show current state")
+    while True:
+        user_input = input("\nEnter move(s): ").strip().upper()
+        
+        if not user_input:
+            continue
+            
+        if user_input == "QUIT":
+            print("Thanks for playing! See you soon! ")
+            break
+            
+        elif user_input == "SHOW":
+            cube.visualize()
+            
+        elif user_input == "SCRAMBLE":
+            num = input("How many moves? (default 20): ").strip()
+            num = int(num) if num.isdigit() else 20
+            cube.scramble(num)
+            cube.visualize()
+            
+        elif user_input == "RESET":
+            cube = magicCube()
+            print("Cube reset to solved state!")
+            cube.visualize()
+            
+        elif user_input == "HISTORY":
+            if cube.move_history:
+                print(f"Moves: {' '.join(cube.move_history)}")
+            else:
+                print("No moves yet!")
+        
+        else:
+            # Process moves
+            moves = user_input.split()
+            try:
+                for move in moves:
+                    if move.endswith("'"):
+                        face = move[0]
+                        if hasattr(cube, face):
+                            getattr(cube, face)(inverse=True)
+                        else:
+                            print(f" Invalid move: {move}")
+                    else:
+                        face = move[0]
+                        if hasattr(cube, face):
+                            getattr(cube, face)(inverse=False)
+                        else:
+                            print(f" Invalid move: {move}")
+                
+                print(f" Executed: {' '.join(moves)}")
+                cube.visualize()
+                
+            except Exception as e:
+                print(f" Error: {e}")
 
 if __name__ == "__main__":
-    main()
+    interactive_mode()
