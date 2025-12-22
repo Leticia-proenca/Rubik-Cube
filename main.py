@@ -1,9 +1,9 @@
-from function import RubiksCube
+from function import magicCube
 
 def main():
     print("=== RUBIK'S CUBE SIMULATOR 3x3 ===\n")
     
-    cube = RubiksCube()
+    cube = magicCube()
     
     print("\nScrambling the cube...")
     cube.scramble(15)

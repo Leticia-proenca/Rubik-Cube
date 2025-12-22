@@ -1,6 +1,9 @@
+import matplotlib
+matplotlib.use('TkAgg')  # Force graphical backend
+
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import rectangle
+from matplotlib.patches import Rectangle
 
 class magicCube:
     def __init__(self):
@@ -11,7 +14,7 @@ class magicCube:
                     'D': np.array([['Y']*3 for _ in range(3)]),
                     'F': np.array([['R']*3 for _ in range(3)]),
                     'B': np.array([['O']*3 for _ in range(3)]),
-                    'L': np.arrray([['G']*3 for _ in range(3)]),
+                    'L': np.array([['G']*3 for _ in range(3)]),
                     'R': np.array([['B']*3 for _ in range(3)])}
         
         self.colours = {'W': '#FFFFFF', 'Y': '#FFFF00', 'R': '#FF0000', 'O': '#FF8800', 'B': '#0000FF', 'G': '#00FF00'}
@@ -73,7 +76,7 @@ class magicCube:
     def R(self, inverse = False):
             # rotates right face
         if not inverse:
-            self.rotate_face_clockwise('R')
+            self.rotateFaces_clockwise('R')
             temp = np.array([self.faces['F'][i][2] for i in range(3)])
 
             for i in range(3):
@@ -118,39 +121,31 @@ class magicCube:
                 self.faces['U'][i][0] = temp[i]
             self.pastMovements.append("L'")
 
-    def F(self, inverse = False):
-        #rotates front face
-
+    def F(self, inverse=False):
+    # rotates front face
         if not inverse:
             self.rotateFaces_clockwise('F')
-            tem = self.faces['U'][2].copy()
+            temp = self.faces['U'][2].copy()
             self.faces['U'][2] = np.array([self.faces['L'][2-i][2] for i in range(3)])
-
             for i in range(3):
                 self.faces['L'][i][2] = self.faces['D'][0][i]
-
             self.faces['D'][0] = np.array([self.faces['R'][2-i][0] for i in range(3)])
-
             for i in range(3):
                 self.faces['R'][i][0] = temp[i]
-
             self.pastMovements.append("F")
         else:
-            self.rotate_face_counterclockwise('F')
+            self.rotateFaces_counterclockwise('F')
             temp = self.faces['U'][2].copy()
-
-            for i in range(3):
-                self.faces['U'][2][i] = self.faces['R'][i][0]
-
-            for i in range(3);
-                self.faces['R'][i][0] = self.faces['D'][0][2-i]
-
-            self.faces['D'][0] = np.array([self.faces['L'][i][2] for i in range(3)])
-
-            for i in range(3):
-                self.faces['L'][i][2] = temp[2-i]
+            temp_R = np.array([self.faces['R'][i][0] for i in range(3)])
+            temp_D = self.faces['D'][0].copy()
+            temp_L = np.array([self.faces['L'][i][2] for i in range(3)])
             
-            self.move_history.append("F'")
+            for i in range(3):
+                self.faces['U'][2][i] = temp_R[i]
+                self.faces['R'][i][0] = temp_D[2-i]
+                self.faces['D'][0][i] = temp_L[i]
+                self.faces['L'][i][2] = temp[2-i]
+            self.pastMovements.append("F'")
 
     def scramble(self, num_moves = 20):
         moves = ['U', 'D', 'R', 'L', 'F']
@@ -162,7 +157,7 @@ class magicCube:
             getattr(self, move)(inverse)
 
         print(f"The cube is scrambled with {num_moves} moves!")
-        print(f"Sequence: {' '.join(self.move_history)}")
+        print(f"Sequence: {' '.join(self.moveHistory)}")
 
     def visualize(self):
         # display of the cube
@@ -186,9 +181,9 @@ class magicCube:
 
             for i in range(3):
                 for j in range(3):
-                    color = self.colors[face[i][j]]
+                    colours = self.colours[face[i][j]]
                     rect = Rectangle((ox + j, oy + (2-i)), 1, 1, 
-                                    facecolor=color, edgecolor='black', linewidth=2)
+                                    facecolor=colours, edgecolor='black', linewidth=2)
                     ax.add_patch(rect)
 
             ax.text(ox + 1.5, oy + 1.5, face_name, 
