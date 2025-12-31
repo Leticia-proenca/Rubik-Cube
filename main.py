@@ -1,4 +1,5 @@
 from function import magicCube
+import matplotlib.pyplot as plt
 
 def interactive_mode():
     print("=== RUBIK'S CUBE SIMULATOR 3x3 ===\n")
@@ -15,9 +16,9 @@ def interactive_mode():
     print("scramble - Scramble the cube")
     print("reset    - Reset to solved state")
     print("history  - Show move history")
-    print("quit  -  Exit program")
+    print("quit     - Exit program")
     print("\nYou can type multiple moves: R U R' U'")
-    print("-" * 10)
+    print("-" * 40)
     
     while True:
         user_input = input("\nEnter move(s): ").strip().upper()
@@ -26,7 +27,8 @@ def interactive_mode():
             continue
             
         if user_input == "QUIT":
-            print("Thanks for playing! See you soon! ")
+            plt.close('all')  # Fecha todas as janelas
+            print("Thanks for playing! See you soon!")
             break
             
         elif user_input == "SHOW":
@@ -44,8 +46,8 @@ def interactive_mode():
             cube.visualize()
             
         elif user_input == "HISTORY":
-            if cube.move_history:
-                print(f"Moves: {' '.join(cube.move_history)}")
+            if cube.pastMovements:
+                print(f"Moves: {' '.join(cube.pastMovements)}")
             else:
                 print("No moves yet!")
         
@@ -59,19 +61,19 @@ def interactive_mode():
                         if hasattr(cube, face):
                             getattr(cube, face)(inverse=True)
                         else:
-                            print(f" Invalid move: {move}")
+                            print(f"Invalid move: {move}")
                     else:
                         face = move[0]
                         if hasattr(cube, face):
                             getattr(cube, face)(inverse=False)
                         else:
-                            print(f" Invalid move: {move}")
+                            print(f"Invalid move: {move}")
                 
-                print(f" Executed: {' '.join(moves)}")
+                print(f"Executed: {' '.join(moves)}")
                 cube.visualize()
                 
             except Exception as e:
-                print(f" Error: {e}")
+                print(f"Error: {e}")
 
 if __name__ == "__main__":
     interactive_mode()

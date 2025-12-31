@@ -21,13 +21,13 @@ class magicCube:
 
         self.pastMovements = []
 
-    def rotateFaces_clockwise(self ,face):
+    def rotateFaces_clockwise(self, face):
         self.faces[face] = np.rot90(self.faces[face], -1) #90 degres rotation
 
     def rotateFaces_counterclockwise(self, face):
         self.faces[face] = np.rot90(self.faces[face], 1)
 
-    def U(self, inverse = False):
+    def U(self, inverse=False):
         # rotates upper face
         if not inverse:
             self.rotateFaces_clockwise('U')
@@ -50,7 +50,7 @@ class magicCube:
 
             self.pastMovements.append("U'")
 
-    def D(self, inverse = False):
+    def D(self, inverse=False):
         # rotates down face
         if not inverse:
             self.rotateFaces_clockwise('D')
@@ -71,10 +71,10 @@ class magicCube:
             self.faces['B'][2] = self.faces['L'][2]
             self.faces['L'][2] = temp
 
-            self.pastMovements.append("'D'")
+            self.pastMovements.append("D'")
 
-    def R(self, inverse = False):
-            # rotates right face
+    def R(self, inverse=False):
+        # rotates right face
         if not inverse:
             self.rotateFaces_clockwise('R')
             temp = np.array([self.faces['F'][i][2] for i in range(3)])
@@ -98,17 +98,17 @@ class magicCube:
 
             self.pastMovements.append("R'")
 
-    def L(self, inverse = False):
+    def L(self, inverse=False):
         # rotates left face
         if not inverse:
             self.rotateFaces_clockwise('L')
             temp = np.array([self.faces['F'][i][0] for i in range(3)])
 
             for i in range(3):
-                self.faces['F'][i][0] = self.faces['D'][i][0]
-                self.faces['D'][i][0] = self.faces['B'][2-i][2]
-                self.faces['B'][2-i][2] = self.faces['U'][i][0]
-                self.faces['U'][i][0] = temp[i]
+                self.faces['F'][i][0] = self.faces['U'][i][0]
+                self.faces['U'][i][0] = self.faces['B'][2-i][2]
+                self.faces['B'][2-i][2] = self.faces['D'][i][0]
+                self.faces['D'][i][0] = temp[i]
             self.pastMovements.append("L")
         else:
             self.rotateFaces_counterclockwise('L')
@@ -122,7 +122,7 @@ class magicCube:
             self.pastMovements.append("L'")
 
     def F(self, inverse=False):
-    # rotates front face
+        # rotates front face
         if not inverse:
             self.rotateFaces_clockwise('F')
             temp = self.faces['U'][2].copy()
@@ -147,9 +147,45 @@ class magicCube:
                 self.faces['L'][i][2] = temp[2-i]
             self.pastMovements.append("F'")
 
-    def scramble(self, num_moves = 20):
-        moves = ['U', 'D', 'R', 'L', 'F']
-        self.moveHistory = []
+    def B(self, inverse=False):
+        # rotates back face
+        if not inverse:
+            self.rotateFaces_clockwise('B')
+            temp = self.faces['U'][0].copy()
+            
+            for i in range(3):
+                self.faces['U'][0][i] = self.faces['R'][i][2]
+            
+            for i in range(3):
+                self.faces['R'][i][2] = self.faces['D'][2][2-i]
+            
+            for i in range(3):
+                self.faces['D'][2][i] = self.faces['L'][i][0]
+            
+            for i in range(3):
+                self.faces['L'][i][0] = temp[2-i]
+            
+            self.pastMovements.append("B")
+        else:
+            self.rotateFaces_counterclockwise('B')
+            temp = self.faces['U'][0].copy()
+            
+            for i in range(3):
+                self.faces['U'][0][i] = self.faces['L'][2-i][0]
+            
+            for i in range(3):
+                self.faces['L'][i][0] = self.faces['D'][2][i]
+            
+            for i in range(3):
+                self.faces['D'][2][i] = self.faces['R'][2-i][2]
+            
+            for i in range(3):
+                self.faces['R'][i][2] = temp[i]
+            
+            self.pastMovements.append("B'")
+
+    def scramble(self, num_moves=20):
+        moves = ['U', 'D', 'R', 'L', 'F', 'B']
 
         for _ in range(num_moves):
             move = np.random.choice(moves)
@@ -157,10 +193,11 @@ class magicCube:
             getattr(self, move)(inverse)
 
         print(f"The cube is scrambled with {num_moves} moves!")
-        print(f"Sequence: {' '.join(self.moveHistory)}")
+        print(f"Sequence: {' '.join(self.pastMovements[-num_moves:])}")
 
     def visualize(self):
         # display of the cube
+        plt.close('all')  # Fecha janelas anteriores
         fig, ax = plt.subplots(1, 1, figsize=(12, 9))
         ax.set_xlim(0, 12)
         ax.set_ylim(0, 9)
@@ -191,4 +228,5 @@ class magicCube:
             
         plt.title("Rubik's Cube 3x3", fontsize=16, fontweight='bold')
         plt.tight_layout()
-        plt.show()
+        plt.show(block=False)  # NÃO BLOQUEIA o terminal!
+        plt.pause(0.001)  # Pequena pausa para atualizar a janela
