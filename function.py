@@ -205,11 +205,11 @@ class magicCube:
 
         return sx, sy
     
-    def _draw_tile(self, ax, corners_3d, colour, edge_colour='#1a1a1a', lw = 1.2, zorder = 1):
+    def _draw_tile(self, ax, corners_3d, color, edge_color='#1a1a1a', lw = 1.2, zorder = 1):
         pts = np.array ([self._iso(*c) for c in corners_3d])
         poly = Polygon(pts, closed = True,
-                    facecolor = colour,
-                    edgecolor = edge_colour,
+                    facecolor = color,
+                    edgecolor = edge_color,
                     linewidth = lw,
                     zorder = zorder)
         ax.add_patch(poly)
@@ -248,7 +248,7 @@ class magicCube:
                     (x0 + S,   y0 + S,   z0),
                     (x0,       y0 + S,   z0),]
                 
-                colour_key = self.faces['U'][row][col]
+                colour = self.colours[self.faces['U'][row][col]]
                 self._draw_tile(ax, corners, zorder=3)
 
             self._draw_face_outline(ax, [
@@ -269,7 +269,7 @@ class magicCube:
                     (x0 + S, y0, z0 + S),
                     (x0,     y0, z0 + S),]
                 
-                colour_key = self.faces['F'][row][col]
+                colour = self.colours[self.faces['F'][row][col]]
                 self._draw_facelet(ax, corners, zorder=3)
 
             self._draw_face_outline(ax, [
@@ -289,7 +289,7 @@ class magicCube:
                     (x0, y0 + S, z0),
                     (x0, y0 + S, z0 + S),
                     (x0, y0,     z0 + S),]
-                colour_key = self.faces['R'][row][col]
+                colour = self.colours[self.faces['R'][row][col]]
                 self._draw_facelet(ax, corners, zorder=3)
 
             self._draw_face_outline(ax, [
