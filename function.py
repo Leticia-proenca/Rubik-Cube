@@ -3,9 +3,8 @@ matplotlib.use('TkAgg')  # Force graphical backend
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection
 import matplotlib.patches as mpatches
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class magicCube:
     def __init__(self):
@@ -199,129 +198,93 @@ class magicCube:
 
     #visualization
 
-    def _iso(self, x, y, z):
-        sx = (x -y)*np.cos(np.radians(30))
-        sy = (x + y)*np.sin(np.radians(30)) + z
+    def _make_face_polys(self, face_name, normal_axis, fixed_val, u_axis, v_axis):
+        """Gera os polígonos 3D e cores de uma face."""
+        N, S = 3, 1.0
+        polys, cols = [], []
+        for row in range(N):
+            for col in range(N):
+                u0 = col * S
+                v0 = (N - 1 - row) * S
+                corners_uv = [(u0, v0), (u0+S, v0), (u0+S, v0+S), (u0, v0+S)]
+                corners_3d = []
+                for cu, cv in corners_uv:
+                    xyz = [0, 0, 0]
+                    xyz[normal_axis] = fixed_val
+                    xyz[u_axis] = cu
+                    xyz[v_axis] = cv
+                    corners_3d.append(tuple(xyz))
+                polys.append(corners_3d)
+                cols.append(self.colours[self.faces[face_name][row][col]])
+        return polys, cols
 
-        return sx, sy
-    
-    def _draw_tile(self, ax, corners_3d, color, edge_color='#1a1a1a', lw = 1.2, zorder = 1):
-        pts = np.array ([self._iso(*c) for c in corners_3d])
-        poly = Polygon(pts, closed = True,
-                    facecolor = color,
-                    edgecolor = edge_color,
-                    linewidth = lw,
-                    zorder = zorder)
-        ax.add_patch(poly)
-
-    def _draw_face_outline(self, ax, corners_3d, zorder = 2):
-        pts = np.array([self.iso(*c) for c in corners_3d])
-        poly = Polygon(pts, closed = True,
-                    facecolor = 'none',
-                    edgecolor = '#111111' ,
-                    linewidth = 2.8,
-                    zorder = zorder)
-        ax.add_patch(poly)
+    def _init_figure(self):
+        # cria a figura uma única vez e guarda a referência
+        self._fig = plt.figure(figsize=(9, 8), facecolor='#1C1C1E')
+        self._ax = self._fig.add_subplot(111, projection='3d', facecolor='#1C1C1E')
+        plt.show(block=False)
 
     def visualize(self):
-        plt.close('all')
+        # cria a figura se ainda não existir ou se o utilizador a fechou
+        if not hasattr(self, '_fig') or not plt.fignum_exists(self._fig.number):
+            self._init_figure()
 
-        fig, ax = plt.subplots(figsize =(9, 8), facecolor = '#1C1C1E')
-
+        ax = self._ax
+        ax.cla()  # limpa só o conteúdo, mantém a janela aberta
         ax.set_facecolor('#1C1C1E')
-        ax.set_aspect('equal')
-        ax.axis('off')
+        ax.set_axis_off()
 
-        N = 3
-        S = 1.0
+        N, S = 3, 1.0
 
-        for row in range(N):
-            for col in range(N):
-                # x grows right (R direction), y grows into screen (B direction)
-                x0 = col * S
-                y0 = (N - 1 - row) * S
-                z0 = N * S
+        # face U (topo):     normal z, z=N, u=x, v=y
+        # face D (baixo):    normal z, z=0, u=x, v=y
+        # face F (frente):   normal y, y=0, u=x, v=z
+        # face B (trás):     normal y, y=N, u=x, v=z
+        # face R (direita):  normal x, x=N, u=y, v=z
+        # face L (esquerda): normal x, x=0, u=y, v=z
+        for face_name, normal_axis, fixed_val, u_axis, v_axis in [
+            ('U', 2, N*S, 0, 1),
+            ('D', 2, 0,   0, 1),
+            ('F', 1, 0,   0, 2),
+            ('B', 1, N*S, 0, 2),
+            ('R', 0, N*S, 1, 2),
+            ('L', 0, 0,   1, 2),
+        ]:
+            polys, cols = self._make_face_polys(face_name, normal_axis, fixed_val, u_axis, v_axis)
+            pc = Poly3DCollection(polys, zsort='min')
+            pc.set_facecolor(cols)
+            pc.set_edgecolor('#111111')
+            pc.set_linewidth(1.2)
+            ax.add_collection3d(pc)
 
-                corners = [
-                    (x0,       y0,       z0),
-                    (x0 + S,   y0,       z0),
-                    (x0 + S,   y0 + S,   z0),
-                    (x0,       y0 + S,   z0),]
-                
-                colour = self.colours[self.faces['U'][row][col]]
-                self._draw_tile(ax, corners, zorder=3)
-
-            self._draw_face_outline(ax, [
-            (0,   0,   N*S),
-            (N*S, 0,   N*S),
-            (N*S, N*S, N*S),
-            (0,   N*S, N*S),],
-            zorder=4)
-
-        for row in range(N):
-            for col in range(N):
-                x0 = col * S
-                y0 = 0
-                z0 = (N - 1 - row) * S
-                corners = [
-                    (x0,     y0, z0),
-                    (x0 + S, y0, z0),
-                    (x0 + S, y0, z0 + S),
-                    (x0,     y0, z0 + S),]
-                
-                colour = self.colours[self.faces['F'][row][col]]
-                self._draw_facelet(ax, corners, zorder=3)
-
-            self._draw_face_outline(ax, [
-                (0,   0, 0),
-                (N*S, 0, 0),
-                (N*S, 0, N*S),
-                (0,   0, N*S),],
-                zorder=4)
-            
-        for row in range(N):
-            for col in range(N):
-                x0 = N * S
-                y0 = col * S
-                z0 = (N - 1 - row) * S
-                corners = [
-                    (x0, y0,     z0),
-                    (x0, y0 + S, z0),
-                    (x0, y0 + S, z0 + S),
-                    (x0, y0,     z0 + S),]
-                colour = self.colours[self.faces['R'][row][col]]
-                self._draw_facelet(ax, corners, zorder=3)
-
-            self._draw_face_outline(ax, [
-                (N*S, 0,   0),
-                (N*S, N*S, 0),
-                (N*S, N*S, N*S),
-                (N*S, 0,   N*S),],
-                zorder=4)
-                
+        ax.set_xlim(0, N*S)
+        ax.set_ylim(0, N*S)
+        ax.set_zlim(0, N*S)
+        ax.set_box_aspect([1, 1, 1])
+        ax.view_init(elev=30, azim=-45)
 
         legend_items = [
-        mpatches.Patch(facecolor=v, edgecolor='#555', label=k)
-        for k, v in self.colours.items()]
+            mpatches.Patch(facecolor=v, edgecolor='#555', label=k)
+            for k, v in self.colours.items()]
         ax.legend(handles=legend_items, loc='lower left',
-        ncol=6, fontsize=9,
-        framealpha=0.25, facecolor='#333',
-        edgecolor='#555', labelcolor='white',
-        handlelength=1.2, handleheight=1.2,
-        bbox_to_anchor=(0.0, -0.04))
+            ncol=6, fontsize=9,
+            framealpha=0.25, facecolor='#333',
+            edgecolor='#555', labelcolor='white',
+            handlelength=1.2, handleheight=1.2,
+            bbox_to_anchor=(0.0, -0.04))
 
-#past movements
+        #past movements
         if self.pastMovements:
             history_str = "  ".join(self.pastMovements[-15:])
             if len(self.pastMovements) > 15:
                 history_str = "… " + history_str
-                ax.set_xlabel(f"Moves: {history_str}",
-                    color='#aaaaaa', fontsize=9, labelpad=12)
-    
-#title of the game
+            ax.set_xlabel(f"Moves: {history_str}",
+                color='#aaaaaa', fontsize=9, labelpad=12)
+
+        #title of the game
         ax.set_title("Rubik's Cube 3×3  —  3D view  (U · F · R)",
             color='white', fontsize=14, fontweight='bold', pad=14)
-    
-        plt.tight_layout()
-        plt.show(block=False)
+
+        self._fig.canvas.draw()
+        self._fig.canvas.flush_events()
         plt.pause(0.001)
