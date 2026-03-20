@@ -236,22 +236,18 @@ class magicCube:
 
         N, S = 3, 1.0
 
-        # face U (topo):     normal z, z=N, u=x, v=y
-        # face D (baixo):    normal z, z=0, u=x, v=y
-        # face F (frente):   normal y, y=0, u=x, v=z
-        # face B (trás):     normal y, y=N, u=x, v=z
-        # face R (direita):  normal x, x=N, u=y, v=z
-        # face L (esquerda): normal x, x=0, u=y, v=z
+        # ordem de trás para frente segundo azim=-45, elev=30
+        # B e L ficam atrás, F e R à frente, D em baixo, U em cima
         for face_name, normal_axis, fixed_val, u_axis, v_axis in [
-            ('U', 2, N*S, 0, 1),
-            ('D', 2, 0,   0, 1),
-            ('F', 1, 0,   0, 2),
-            ('B', 1, N*S, 0, 2),
-            ('R', 0, N*S, 1, 2),
-            ('L', 0, 0,   1, 2),
+            ('B', 1, N*S, 0, 2),  # trás
+            ('L', 0, 0,   1, 2),  # esquerda
+            ('D', 2, 0,   0, 1),  # baixo
+            ('U', 2, N*S, 0, 1),  # topo
+            ('F', 1, 0,   0, 2),  # frente
+            ('R', 0, N*S, 1, 2),  # direita
         ]:
             polys, cols = self._make_face_polys(face_name, normal_axis, fixed_val, u_axis, v_axis)
-            pc = Poly3DCollection(polys, zsort='min')
+            pc = Poly3DCollection(polys, zsort='average')
             pc.set_facecolor(cols)
             pc.set_edgecolor('#111111')
             pc.set_linewidth(1.2)
