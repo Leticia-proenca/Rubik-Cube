@@ -201,12 +201,12 @@ class magicCube:
 
     def _iso(self, x, y, z):
         sx = (x -y)*np.cos(np.radians(30))
-        sy = (x + y)*np.sin(radians(30)) + z
+        sy = (x + y)*np.sin(np.radians(30)) + z
 
         return sx, sy
     
     def _draw_tile(self, ax, corners_3d, colour, edge_colour='#1a1a1a', lw = 1.2, zorder = 1):
-        pts = np.array ([self.iso(*c) for c in corners_3d])
+        pts = np.array ([self._iso(*c) for c in corners_3d])
         poly = Polygon(pts, closed = True,
                     facecolor = colour,
                     edgecolor = edge_colour,
@@ -214,14 +214,14 @@ class magicCube:
                     zorder = zorder)
         ax.add_patch(poly)
 
-    def draw_face_outline(self, ax, corners_3d, zorder = 2):
+    def _draw_face_outline(self, ax, corners_3d, zorder = 2):
         pts = np.array([self.iso(*c) for c in corners_3d])
-        poly = Polygon(pts, closed = True, 
-                        facecolor = 'none',
-                        edgecolor = #111111 ,
-                        linewidth = 2.8,
-                        zorder=zorder)
-        ax.add_path(poly)
+        poly = Polygon(pts, closed = True,
+                    facecolor = 'none',
+                    edgecolor = '#111111' ,
+                    linewidth = 2.8,
+                    zorder = zorder)
+        ax.add_patch(poly)
 
     def visualize(self):
         plt.close('all')
@@ -258,72 +258,70 @@ class magicCube:
             (0,   N*S, N*S),],
             zorder=4)
 
-            for row in range(N):
-                for col in range(N):
-                    x0 = col * S
-                    y0 = 0
-                    z0 = (N - 1 - row) * S
-                    corners = [
-                        (x0,     y0, z0),
-                        (x0 + S, y0, z0),
-                        (x0 + S, y0, z0 + S),
-                        (x0,     y0, z0 + S),]
-                    
-                    colour_key = self.faces['F'][row][col]
-                    self._draw_facelet(ax, corners, zorder=3)
-
-                self._draw_face_outline(ax, [
-                    (0,   0, 0),
-                    (N*S, 0, 0),
-                    (N*S, 0, N*S),
-                    (0,   0, N*S),],
-                    zorder=4)
+        for row in range(N):
+            for col in range(N):
+                x0 = col * S
+                y0 = 0
+                z0 = (N - 1 - row) * S
+                corners = [
+                    (x0,     y0, z0),
+                    (x0 + S, y0, z0),
+                    (x0 + S, y0, z0 + S),
+                    (x0,     y0, z0 + S),]
                 
-            for row in range(N):
-                for col in range(N):
-                    x0 = N * S
-                    y0 = col * S
-                    z0 = (N - 1 - row) * S
-                    corners = [
-                        (x0, y0,     z0),
-                        (x0, y0 + S, z0),
-                        (x0, y0 + S, z0 + S),
-                        (x0, y0,     z0 + S),]
-                    colour_key = self.faces['R'][row][col]
-                    self._draw_facelet(ax, corners, zorder=3)
+                colour_key = self.faces['F'][row][col]
+                self._draw_facelet(ax, corners, zorder=3)
 
-                self._draw_face_outline(ax, [
-                    (N*S, 0,   0),
-                    (N*S, N*S, 0),
-                    (N*S, N*S, N*S),
-                    (N*S, 0,   N*S),],
-                    zorder=4)
+            self._draw_face_outline(ax, [
+                (0,   0, 0),
+                (N*S, 0, 0),
+                (N*S, 0, N*S),
+                (0,   0, N*S),],
+                zorder=4)
+            
+        for row in range(N):
+            for col in range(N):
+                x0 = N * S
+                y0 = col * S
+                z0 = (N - 1 - row) * S
+                corners = [
+                    (x0, y0,     z0),
+                    (x0, y0 + S, z0),
+                    (x0, y0 + S, z0 + S),
+                    (x0, y0,     z0 + S),]
+                colour_key = self.faces['R'][row][col]
+                self._draw_facelet(ax, corners, zorder=3)
+
+            self._draw_face_outline(ax, [
+                (N*S, 0,   0),
+                (N*S, N*S, 0),
+                (N*S, N*S, N*S),
+                (N*S, 0,   N*S),],
+                zorder=4)
                 
 
-            legend_items = [
-            mpatches.Patch(facecolor=v, edgecolor='#555', label=k)
-            for k, v in self.colours.items()]
-            ax.legend(handles=legend_items, loc='lower left',
-            ncol=6, fontsize=9,
-            framealpha=0.25, facecolor='#333',
-            edgecolor='#555', labelcolor='white',
-            handlelength=1.2, handleheight=1.2,
-            bbox_to_anchor=(0.0, -0.04))
+        legend_items = [
+        mpatches.Patch(facecolor=v, edgecolor='#555', label=k)
+        for k, v in self.colours.items()]
+        ax.legend(handles=legend_items, loc='lower left',
+        ncol=6, fontsize=9,
+        framealpha=0.25, facecolor='#333',
+        edgecolor='#555', labelcolor='white',
+        handlelength=1.2, handleheight=1.2,
+        bbox_to_anchor=(0.0, -0.04))
 
 #past movements
-            if self.pastMovements:
-                history_str = "  ".join(self.pastMovements[-15:])
-                if len(self.pastMovements) > 15:
-                    history_str = "… " + history_str
+        if self.pastMovements:
+            history_str = "  ".join(self.pastMovements[-15:])
+            if len(self.pastMovements) > 15:
+                history_str = "… " + history_str
                 ax.set_xlabel(f"Moves: {history_str}",
-                            color='#aaaaaa', fontsize=9, labelpad=12)
+                    color='#aaaaaa', fontsize=9, labelpad=12)
     
 #title of the game
-            ax.set_title("Rubik's Cube 3×3  —  3D view  (U · F · R)",
-                color='white', fontsize=14, fontweight='bold', pad=14)
+        ax.set_title("Rubik's Cube 3×3  —  3D view  (U · F · R)",
+            color='white', fontsize=14, fontweight='bold', pad=14)
     
-            plt.tight_layout()
-            plt.show(block=False)
-            plt.pause(0.001)
-    
-    @staticmethod
+        plt.tight_layout()
+        plt.show(block=False)
+        plt.pause(0.001)
