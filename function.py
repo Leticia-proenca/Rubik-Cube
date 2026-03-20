@@ -298,3 +298,32 @@ class magicCube:
                     (N*S, N*S, N*S),
                     (N*S, 0,   N*S),],
                     zorder=4)
+                
+
+            legend_items = [
+            mpatches.Patch(facecolor=v, edgecolor='#555', label=k)
+            for k, v in self.colours.items()]
+            ax.legend(handles=legend_items, loc='lower left',
+            ncol=6, fontsize=9,
+            framealpha=0.25, facecolor='#333',
+            edgecolor='#555', labelcolor='white',
+            handlelength=1.2, handleheight=1.2,
+            bbox_to_anchor=(0.0, -0.04))
+
+#past movements
+            if self.pastMovements:
+                history_str = "  ".join(self.pastMovements[-15:])
+                if len(self.pastMovements) > 15:
+                    history_str = "… " + history_str
+                ax.set_xlabel(f"Moves: {history_str}",
+                            color='#aaaaaa', fontsize=9, labelpad=12)
+    
+#title of the game
+            ax.set_title("Rubik's Cube 3×3  —  3D view  (U · F · R)",
+                color='white', fontsize=14, fontweight='bold', pad=14)
+    
+            plt.tight_layout()
+            plt.show(block=False)
+            plt.pause(0.001)
+    
+    @staticmethod
