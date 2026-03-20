@@ -3,7 +3,9 @@ matplotlib.use('TkAgg')  # Force graphical backend
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
+import matplotlib.patches as mpatches
 
 class magicCube:
     def __init__(self):
@@ -195,38 +197,104 @@ class magicCube:
         print(f"The cube is scrambled with {num_moves} moves!")
         print(f"Sequence: {' '.join(self.pastMovements[-num_moves:])}")
 
+    #visualization
+
+    def _iso(self, x, y, z):
+        sx = (x -y)*np.cos(np.radians(30))
+        sy = (x + y)*np.sin(radians(30)) + z
+
+        return sx, sy
+    
+    def _draw_tile(self, ax, corners_3d, colour, edge_colour='#1a1a1a', lw = 1.2, zorder = 1):
+        pts = np.array ([self.iso(*c) for c in corners_3d])
+        poly = Polygon(pts, closed = True,
+                    facecolor = colour,
+                    edgecolor = edge_colour,
+                    linewidth = lw,
+                    zorder = zorder)
+        ax.add_patch(poly)
+
+    def draw_face_outline(self, ax, corners_3d, zorder = 2):
+        pts = np.array([self.iso(*c) for c in corners_3d])
+        poly = Polygon(pts, closed = True, 
+                        facecolor = 'none',
+                        edgecolor = #111111 ,
+                        linewidth = 2.8,
+                        zorder=zorder)
+        ax.add_path(poly)
+
     def visualize(self):
-        # display of the cube
-        plt.close('all')  # Fecha janelas anteriores
-        fig, ax = plt.subplots(1, 1, figsize=(12, 9))
-        ax.set_xlim(0, 12)
-        ax.set_ylim(0, 9)
+        plt.close('all')
+
+        fig, ax = plt.subplots(figsize =(9, 8), facecolor = '#1C1C1E')
+
+        ax.set_facecolor('#1C1C1E')
         ax.set_aspect('equal')
         ax.axis('off')
 
-        # positions 
-        positions = {'U': (3, 6),   # up
-            'L': (0, 3),   # left
-            'F': (3, 3),   # front
-            'R': (6, 3),   # right
-            'B': (9, 3),   # back
-            'D': (3, 0)}    # down 
-        
-        # display
-        for face_name, (ox, oy) in positions.items():
-            face = self.faces[face_name]
+        N = 3
+        S = 1.0
 
-            for i in range(3):
-                for j in range(3):
-                    colours = self.colours[face[i][j]]
-                    rect = Rectangle((ox + j, oy + (2-i)), 1, 1, 
-                                    facecolor=colours, edgecolor='black', linewidth=2)
-                    ax.add_patch(rect)
+        for row in range(N):
+            for col in range(N):
+                # x grows right (R direction), y grows into screen (B direction)
+                x0 = col * S
+                y0 = (N - 1 - row) * S
+                z0 = N * S
 
-            ax.text(ox + 1.5, oy + 1.5, face_name, 
-                ha='center', va='center', fontsize=16, fontweight='bold')
-            
-        plt.title("Rubik's Cube 3x3", fontsize=16, fontweight='bold')
-        plt.tight_layout()
-        plt.show(block=False)  # NÃO BLOQUEIA o terminal!
-        plt.pause(0.001)  # Pequena pausa para atualizar a janela
+                corners = [
+                    (x0,       y0,       z0),
+                    (x0 + S,   y0,       z0),
+                    (x0 + S,   y0 + S,   z0),
+                    (x0,       y0 + S,   z0),]
+                
+                colour_key = self.faces['U'][row][col]
+                self._draw_facelet(ax, corners, zorder=3)
+
+            self._draw_face_outline(ax, [
+            (0,   0,   N*S),
+            (N*S, 0,   N*S),
+            (N*S, N*S, N*S),
+            (0,   N*S, N*S),],
+            zorder=4)
+
+            for row in range(N):
+                for col in range(N):
+                    x0 = col * S
+                    y0 = 0
+                    z0 = (N - 1 - row) * S
+                    corners = [
+                        (x0,     y0, z0),
+                        (x0 + S, y0, z0),
+                        (x0 + S, y0, z0 + S),
+                        (x0,     y0, z0 + S),]
+                    
+                    colour_key = self.faces['F'][row][col]
+                    self._draw_facelet(ax, corners, zorder=3)
+
+                self._draw_face_outline(ax, [
+                    (0,   0, 0),
+                    (N*S, 0, 0),
+                    (N*S, 0, N*S),
+                    (0,   0, N*S),],
+                    zorder=4)
+                
+            for row in range(N):
+                for col in range(N):
+                    x0 = N * S
+                    y0 = col * S
+                    z0 = (N - 1 - row) * S
+                    corners = [
+                        (x0, y0,     z0),
+                        (x0, y0 + S, z0),
+                        (x0, y0 + S, z0 + S),
+                        (x0, y0,     z0 + S),]
+                    colour_key = self.faces['R'][row][col]
+                    self._draw_facelet(ax, corners, zorder=3)
+
+                self._draw_face_outline(ax, [
+                    (N*S, 0,   0),
+                    (N*S, N*S, 0),
+                    (N*S, N*S, N*S),
+                    (N*S, 0,   N*S),],
+                    zorder=4)
