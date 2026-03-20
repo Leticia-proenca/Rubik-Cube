@@ -249,7 +249,7 @@ class magicCube:
                     (x0,       y0 + S,   z0),]
                 
                 colour_key = self.faces['U'][row][col]
-                self._draw_facelet(ax, corners, zorder=3)
+                self._draw_tile(ax, corners, zorder=3)
 
             self._draw_face_outline(ax, [
             (0,   0,   N*S),
