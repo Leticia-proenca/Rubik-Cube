@@ -4,7 +4,6 @@ matplotlib.use('TkAgg')  # Force graphical backend
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class magicCube:
     def __init__(self):
@@ -198,25 +197,22 @@ class magicCube:
 
     #visualization
 
-    def _make_face_polys(self, face_name, normal_axis, fixed_val, u_axis, v_axis):
-        """Gera os polígonos 3D e cores de uma face."""
-        N, S = 3, 1.0
-        polys, cols = [], []
-        for row in range(N):
-            for col in range(N):
-                u0 = col * S
-                v0 = (N - 1 - row) * S
-                corners_uv = [(u0, v0), (u0+S, v0), (u0+S, v0+S), (u0, v0+S)]
-                corners_3d = []
-                for cu, cv in corners_uv:
-                    xyz = [0, 0, 0]
-                    xyz[normal_axis] = fixed_val
-                    xyz[u_axis] = cu
-                    xyz[v_axis] = cv
-                    corners_3d.append(tuple(xyz))
-                polys.append(corners_3d)
-                cols.append(self.colours[self.faces[face_name][row][col]])
-        return polys, cols
+    def _draw_tile_surface(self, ax, normal_axis, fixed_val, u_axis, v_axis, u0, v0, colour):
+        """Desenha um tile usando plot_surface com borda preta via edgecolor."""
+        S = 1.0
+        pts = [(u0,v0),(u0+S,v0),(u0+S,v0+S),(u0,v0+S)]
+        xs,ys,zs=[],[],[]
+        for cu,cv in pts:
+            xyz=[0.0,0.0,0.0]; xyz[normal_axis]=float(fixed_val); xyz[u_axis]=cu; xyz[v_axis]=cv
+            xs.append(xyz[0]); ys.append(xyz[1]); zs.append(xyz[2])
+        ax.plot_surface(
+            np.array([[xs[0],xs[1]],[xs[3],xs[2]]]),
+            np.array([[ys[0],ys[1]],[ys[3],ys[2]]]),
+            np.array([[zs[0],zs[1]],[zs[3],zs[2]]]),
+            color=colour, shade=False,
+            edgecolor='#111111', linewidth=2.0,
+            antialiased=False
+        )
 
     def _init_figure(self):
         # cria a figura uma única vez e guarda a referência
@@ -236,22 +232,21 @@ class magicCube:
 
         N, S = 3, 1.0
 
+        fwd, bwd = [0,1,2], [2,1,0]
+
         # ordem de trás para frente segundo azim=-45, elev=30
-        # B e L ficam atrás, F e R à frente, D em baixo, U em cima
-        for face_name, normal_axis, fixed_val, u_axis, v_axis in [
-            ('B', 1, N*S, 0, 2),  # trás
-            ('L', 0, 0,   1, 2),  # esquerda
-            ('D', 2, 0,   0, 1),  # baixo
-            ('U', 2, N*S, 0, 1),  # topo
-            ('F', 1, 0,   0, 2),  # frente
-            ('R', 0, N*S, 1, 2),  # direita
+        for face_name, normal_axis, fixed_val, u_axis, v_axis, ro, co in [
+            ('B', 1, N*S, 0, 2, bwd, bwd),  # trás
+            ('L', 0, 0,   1, 2, bwd, bwd),  # esquerda
+            ('D', 2, 0,   0, 1, bwd, fwd),  # baixo
+            ('U', 2, N*S, 0, 1, bwd, fwd),  # topo
+            ('F', 1, 0,   0, 2, bwd, fwd),  # frente
+            ('R', 0, N*S, 1, 2, bwd, fwd),  # direita
         ]:
-            polys, cols = self._make_face_polys(face_name, normal_axis, fixed_val, u_axis, v_axis)
-            pc = Poly3DCollection(polys, zsort='average')
-            pc.set_facecolor(cols)
-            pc.set_edgecolor('#111111')
-            pc.set_linewidth(1.2)
-            ax.add_collection3d(pc)
+            for vi, row in enumerate(ro):
+                for ui, col in enumerate(co):
+                    colour = self.colours[self.faces[face_name][row][col]]
+                    self._draw_tile_surface(ax, normal_axis, fixed_val, u_axis, v_axis, ui*S, vi*S, colour)
 
         ax.set_xlim(0, N*S)
         ax.set_ylim(0, N*S)
