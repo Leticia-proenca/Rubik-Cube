@@ -215,18 +215,18 @@ class magicCube:
         )
 
     def _init_figure(self):
-        # cria a figura uma única vez e guarda a referência
+        # cria figura única vez e guarda a ref
         self._fig = plt.figure(figsize=(9, 8), facecolor='#1C1C1E')
         self._ax = self._fig.add_subplot(111, projection='3d', facecolor='#1C1C1E')
         plt.show(block=False)
 
     def visualize(self):
-        # cria a figura se ainda não existir ou se o utilizador a fechou
+        # cria figura se ainda não existir ou se o utilizador fechou ela
         if not hasattr(self, '_fig') or not plt.fignum_exists(self._fig.number):
             self._init_figure()
 
         ax = self._ax
-        ax.cla()  # limpa só o conteúdo, mantém a janela aberta
+        ax.cla()  # limpa conteúdo, mantem janela aberta
         ax.set_facecolor('#1C1C1E')
         ax.set_axis_off()
 
