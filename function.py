@@ -207,8 +207,8 @@ class magicCube:
             xs.append(xyz[0]); ys.append(xyz[1]); zs.append(xyz[2])
         ax.plot_surface(
             np.array([[xs[0],xs[1]],[xs[3],xs[2]]]),
-            np.array([[ys[0],ys[1]],[ys[3],ys[2]]]),
-            np.array([[zs[0],zs[1]],[zs[3],zs[2]]]),
+            np.array([[ys[0],ys[1]],[ys[3],ys[2]]]),3
+            np.array([[zs[0],zs[1]],[zs[4],zs[2]]]),
             color=colour, shade=False,
             edgecolor='#111111', linewidth=2.0,
             antialiased=False
